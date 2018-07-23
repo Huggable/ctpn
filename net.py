@@ -42,6 +42,7 @@ class net():
         self.layers = self.layers = dict({'data':self.data, 'im_info':self.im_info, 'gt_boxes':self.gt_boxes,\
                             'gt_ishard': self.gt_ishard, 'dontcare_areas': self.dontcare_areas})
         self.trainable = trainable
+        self.setup()
 
     def feed(self, *args):
         assert len(args) != 0
@@ -98,6 +99,10 @@ class net():
                               padding=padding,
                               name=name)
 
+    @layer
+    def Bilstm(self, input, setting, name, trainable=True):
+        return 1
+
     def setup(self):
         (self.feed('data')
             .conv(network_setting['conv_1'], name = 'conv1_1')
@@ -118,11 +123,11 @@ class net():
             .conv(network_setting['conv_5'], name='conv5_2')
             .conv(network_setting['conv_5'], name='conv5_3')
             .conv(network_setting['rpn_conv'], name='rpn_conv_3x3'))
-        print(self.layers['rpn_conv_3x3'].get_shape())
+        print(self.layers['conv_4'].get_shape())
 
 
 
 network = net('a')
-network.setup()
+
 
 #print((network.layers['data'].get_shape()[-1]))
