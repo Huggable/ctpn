@@ -118,7 +118,7 @@ class net():
             .conv(network_setting['conv_5'], name='conv5_2')
             .conv(network_setting['conv_5'], name='conv5_3')
             .conv(network_setting['rpn_conv'], name='rpn_conv_3x3'))
-        print(self.layers['conv5_3'].get_shape())
+        print(self.layers['rpn_conv_3x3'].get_shape())
 
 
 
