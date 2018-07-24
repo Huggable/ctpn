@@ -33,7 +33,7 @@ network_setting = {'conv_1':[3, 3, 64, 1, 1],
 class net():
     def __init__(self, inputs, trainable=True):
         self.inputs = []
-        self.data = tf.placeholder(tf.float32, shape=[None, 2400, 4000, 3], name='data')
+        self.data = tf.placeholder(tf.float32, shape=[None, None, None, 3], name='data')
         self.im_info = tf.placeholder(tf.float32, shape=[None, 3], name='im_info')
         self.gt_boxes = tf.placeholder(tf.float32, shape=[None, 5], name='gt_boxes')
         self.gt_ishard = tf.placeholder(tf.int32, shape=[None], name='gt_ishard')
@@ -101,6 +101,15 @@ class net():
 
     @layer
     def Bilstm(self, input, setting, name, trainable=True):
+        with tf.variable_scope(name) as scope:
+            shape = tf.shape(input)
+
+            img = tf.reshape(input,[shape[0]*shape[1],shape[2],shape[3]])
+            img.set_shape([None,None,setting[0]])
+
+            lstm_fw = tf.contrib.rnn.LSTMCell(setting[1], state_is_tuple=True)
+            lstm_bw = tf.contrib.rnn.LSTMCell(setting[1], state_is_tuple=True)
+
         return 1
 
     def setup(self):
@@ -122,12 +131,14 @@ class net():
             .conv(network_setting['conv_5'], name='conv5_1')
             .conv(network_setting['conv_5'], name='conv5_2')
             .conv(network_setting['conv_5'], name='conv5_3')
-            .conv(network_setting['rpn_conv'], name='rpn_conv_3x3'))
-        print(self.layers['conv_4'].get_shape())
+            .conv(network_setting['rpn_conv'], name='rpn_conv_3x3')
+            .Bilstm([512,128,512],name = 'lstm'))
+        print(self.layers['lstm'])
 
 
 
 network = net('a')
+#network.feed('data').Bilstm(network_setting['conv_1'],name = 'ddd')
 
 
 #print((network.layers['data'].get_shape()[-1]))
