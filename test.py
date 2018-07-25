@@ -7,7 +7,8 @@ Created on Thu Oct 08 17:36:23 2015
 import numpy as np
 import codecs
 
-data = open('text.txt', 'r').read()  # 读取txt一整个文件的内容为字符串str类型
+data = open('text.txt', 'rb').read()  # 读取txt一整个文件的内容为字符串str类型
+data = data.decode()
 chars = list(set(data))  # 去除重复的字符
 print(chars)
 # 打印源文件中包含的字符个数、去重后字符个数
@@ -16,10 +17,9 @@ print('data has %d characters, %d unique.' % (data_size, vocab_size))
 # 创建字符的索引表
 char_to_ix = {ch: i for i, ch in enumerate(chars)}
 ix_to_char = {i: ch for i, ch in enumerate(chars)}
-print
-char_to_ix
+print(char_to_ix)
 hidden_size = 100  # 隐藏层神经元个数
-seq_length = 20  #
+seq_length = 5  #
 learning_rate = 1e-1  # 学习率
 
 # 网络模型
@@ -43,6 +43,7 @@ def lossFun(inputs, targets, hprev):
         xs[t][inputs[t]] = 1
         hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t - 1]) + bh)  # RNN的隐藏层神经元激活值计算
         ys[t] = np.dot(Why, hs[t]) + by  # RNN的输出
+
         ps[t] = np.exp(ys[t]) / np.sum(np.exp(ys[t]))  # 概率归一化
         loss += -np.log(ps[t][targets[t], 0])  # softmax 损失函数
     # 反向传播
@@ -51,7 +52,11 @@ def lossFun(inputs, targets, hprev):
     dhnext = np.zeros_like(hs[0])
     for t in reversed(range(len(inputs))):
         dy = np.copy(ps[t])
+
         dy[targets[t]] -= 1  # backprop into y
+        print('dy[{0}]'.format(t), dy)
+        print('hs[{0}]'.format(t), hs[t].T)
+        print('dot',np.dot(dy, hs[t].T))
         dWhy += np.dot(dy, hs[t].T)
         dby += dy
         dh = np.dot(Why.T, dy) + dhnext  # backprop into h
@@ -86,7 +91,7 @@ mWxh, mWhh, mWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
 mbh, mby = np.zeros_like(bh), np.zeros_like(by)  # memory variables for Adagrad
 smooth_loss = -np.log(1.0 / vocab_size) * seq_length  # loss at iteration 0
 
-while n < 20000:
+while n < 1:
     # n表示迭代网络迭代训练次数。当输入是t=0时刻时，它前一时刻的隐藏层神经元的激活值我们设置为0
     if p + seq_length + 1 >= len(data) or n == 0:
         hprev = np.zeros((hidden_size, 1))  #

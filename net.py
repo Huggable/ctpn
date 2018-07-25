@@ -110,7 +110,35 @@ class net():
             lstm_fw = tf.contrib.rnn.LSTMCell(setting[1], state_is_tuple=True)
             lstm_bw = tf.contrib.rnn.LSTMCell(setting[1], state_is_tuple=True)
 
-        return 1
+            lstm_out, last_state = tf.nn.bidirectional_dynamic_rnn(lstm_fw, lstm_bw, img, dtype=tf.float32)
+
+            lstm_out = tf.concat(lstm_out, axis=-1)
+            lstm_out = tf.reshape(lstm_out, [shape[0]*shape[1]*shape[2], 2 * setting[1]])
+            init_weights = tf.truncated_normal_initializer(stddev=0.1)
+            init_biases = tf.constant_initializer(0.0)
+
+            weights = tf.get_variable('weights', [2 * setting[1],setting[2]], initializer = init_weights, trainable = trainable)
+            biases = tf.get_variable('biases',[setting[2]], initializer = init_biases, trainable = trainable)
+
+            outputs = tf.matmul(lstm_out,weights)+biases
+
+            outputs = tf.reshape(outputs,[shape[0], shape[1], shape[2], setting[2]])
+
+        return outputs
+
+    @layer
+    def lstm_fc(self, input, setting, name, trainable=True):
+        with tf.variable_scope(name) as scope:
+            shape = tf.shape(input)
+            input = tf.reshape(input, [shape[0] * shape[1]* shape[2], shape[3]])
+            init_weights = tf.truncated_normal_initializer(0.0, stddev=0.01)
+            init_biases = tf.constant_initializer(0.0)
+            weights = tf.get_variable('weights', [setting[0], setting[1]], initializer = init_weights, trainable =trainable)
+            biases = tf.get_variable('biases', [setting[1]], initializer = init_biases, trainable =trainable)
+
+            output = tf.matmul(input, weights) + biases
+
+            return tf.reshape(output, [shape[0],shape[1], shape[2], setting[1]])
 
     def setup(self):
         (self.feed('data')
@@ -132,8 +160,9 @@ class net():
             .conv(network_setting['conv_5'], name='conv5_2')
             .conv(network_setting['conv_5'], name='conv5_3')
             .conv(network_setting['rpn_conv'], name='rpn_conv_3x3')
-            .Bilstm([512,128,512],name = 'lstm'))
-        print(self.layers['lstm'])
+            .Bilstm([512,128,512],name = 'lstm')
+            .lstm_fc([512,128], name = 'lstm_fc'))
+        print(self.layers['lstm_fc'])
 
 
 
