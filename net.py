@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-
+import numpy as np
 
 
 def layer(f):
@@ -17,8 +17,9 @@ def layer(f):
 
 
 
-
-
+n_classes = 21
+_feat_stride = [16,]
+anchor_scales = [8, 16, 32]
 
 network_setting = {'conv_1':[3, 3, 64, 1, 1],
                     'conv_2':[3, 3, 128, 1, 1],
@@ -26,6 +27,7 @@ network_setting = {'conv_1':[3, 3, 64, 1, 1],
                     'conv_4':[3, 3, 512, 1, 1],
                     'conv_5':[3, 3, 512, 1, 1],
                     'rpn_conv':[3, 3, 512, 1, 1],
+                    'rpn_cls_score':[1, 1, len(anchor_scales) * 3 * 2, 1, 1],
                     'pool':[2, 2, 2, 2]
 
 }
@@ -50,7 +52,6 @@ class net():
         for layer in args:
             if isinstance(layer,str):
                 try:
-
                     temp = self.layers[layer]
                     self.inputs.append(temp)
                     print('feeding', layer)
@@ -140,6 +141,19 @@ class net():
 
             return tf.reshape(output, [shape[0],shape[1], shape[2], setting[1]])
 
+
+    def _anchor_target_layer(self, rpn_cls_score, gt_boxes, im_info, data, _feat_stride = [16,], anchor_scales = [4 ,8, 16, 32]):
+
+
+    @layer
+    def anchor_target_layer(self, input, _feat_stride, anchor_scales, name):
+
+        a = 1
+        with tf.variable_scope(name) as scope:
+            tf.py_func
+
+
+
     def setup(self):
         (self.feed('data')
             .conv(network_setting['conv_1'], name = 'conv1_1')
@@ -160,14 +174,18 @@ class net():
             .conv(network_setting['conv_5'], name='conv5_2')
             .conv(network_setting['conv_5'], name='conv5_3')
             .conv(network_setting['rpn_conv'], name='rpn_conv_3x3')
-            .Bilstm([512,128,512],name = 'lstm')
-            .lstm_fc([512,128], name = 'lstm_fc'))
-        print(self.layers['lstm_fc'])
+            .conv(network_setting['rpn_cls_score'], padding='VALID', relu=False, name='rpn_cls_score'))
+
+        (self.feed('rpn_cls_score','gt_boxes','im_info','data'))
+        print(self.layers['rpn_cls_score'])
 
 
 
-network = net('a')
+#network = net('a')
 #network.feed('data').Bilstm(network_setting['conv_1'],name = 'ddd')
 
 
 #print((network.layers['data'].get_shape()[-1]))
+a = [[1,2,3,4,5]]
+b = np.array(a)-1
+print(b.shape[0])
