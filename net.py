@@ -144,6 +144,8 @@ class net():
 
     def _anchor_target_layer(self, rpn_cls_score, gt_boxes, im_info, data, _feat_stride = [16,], anchor_scales = [4 ,8, 16, 32]):
 
+        Heigh, Width = rpn_cls_score[1:3]
+
 
     @layer
     def anchor_target_layer(self, input, _feat_stride, anchor_scales, name):
@@ -186,6 +188,12 @@ class net():
 
 
 #print((network.layers['data'].get_shape()[-1]))
-a = [[1,2,3,4,5]]
-b = np.array(a)-1
-print(b.shape[0])
+
+images = ['a','b','c']
+labels = [0,1,2]
+images_tensor = tf.convert_to_tensor(images, dtype=tf.string)
+labels_tensor = tf.convert_to_tensor(labels, dtype=tf.int64)
+s = tf.train.slice_input_producer([images_tensor,labels_tensor],num_epochs = 10)
+sess = tf.Session()
+print(sess.run(s[0]))
+print(sess.run(images_tensor))
